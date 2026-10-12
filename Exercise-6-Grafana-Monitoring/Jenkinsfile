@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Quick Commerce Monitoring project checked out.'
+            }
+        }
+
+        stage('Validate Project Files') {
+            steps {
+                script {
+                    if (!fileExists('delivery_metrics.py')) {
+                        error 'delivery_metrics.py is missing'
+                    }
+                    if (!fileExists('prometheus.yml')) {
+                        error 'prometheus.yml is missing'
+                    }
+                    if (!fileExists('alert_rules.yml')) {
+                        error 'alert_rules.yml is missing'
+                    }
+                    if (!fileExists('requirements.txt')) {
+                        error 'requirements.txt is missing'
+                    }
+                }
+                echo 'All required project files are present.'
+            }
+        }
+
+        stage('Build Status') {
+            steps {
+                echo 'Quick Commerce Monitoring pipeline completed successfully.'
+            }
+        }
+    }
+}
