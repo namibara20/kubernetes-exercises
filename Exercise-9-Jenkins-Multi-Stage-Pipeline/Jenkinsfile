@@ -5,50 +5,59 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                echo 'Creating virtual environment and installing dependencies...'
-                sh '''
-                    python3 -m venv venv
-                    ./venv/bin/pip install -r requirements.txt pytest
-                '''
+                dir('Exercise-9-Jenkins-Multi-Stage-Pipeline') {
+                    echo 'Creating virtual environment and installing dependencies...'
+                    sh '''
+                        python3 -m venv venv
+                        ./venv/bin/pip install -r requirements.txt pytest
+                    '''
+                }
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running unit tests...'
-                sh './venv/bin/python -m pytest -v test_app.py'
+                dir('Exercise-9-Jenkins-Multi-Stage-Pipeline') {
+                    echo 'Running unit tests...'
+                    sh './venv/bin/python -m pytest -v test_app.py'
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying application...'
-                sh '''
-                    mkdir -p "${WORKSPACE}/python-app-deploy"
-                    cp app.py "${WORKSPACE}/python-app-deploy/"
-                '''
+                dir('Exercise-9-Jenkins-Multi-Stage-Pipeline') {
+                    echo 'Deploying application...'
+                    sh '''
+                        mkdir -p "${WORKSPACE}/python-app-deploy"
+                        cp app.py "${WORKSPACE}/python-app-deploy/"
+                    '''
+                }
             }
         }
 
         stage('Run Application') {
             steps {
-                echo 'Starting Flask application...'
-                sh '''
-                    nohup "${WORKSPACE}/venv/bin/python" \
-                        "${WORKSPACE}/python-app-deploy/app.py" \
-                        > "${WORKSPACE}/python-app-deploy/app.log" 2>&1 &
-                    echo $! > "${WORKSPACE}/python-app-deploy/app.pid"
-                    sleep 3
-                    kill -0 "$(cat "${WORKSPACE}/python-app-deploy/app.pid")"
-                '''
+                dir('Exercise-9-Jenkins-Multi-Stage-Pipeline') {
+                    echo 'Starting Flask application...'
+                    sh '''
+                        nohup "${WORKSPACE}/Exercise-9-Jenkins-Multi-Stage-Pipeline/venv/bin/python" \
+                            "${WORKSPACE}/python-app-deploy/app.py" \
+                            > "${WORKSPACE}/python-app-deploy/app.log" 2>&1 &
+                        echo $! > "${WORKSPACE}/python-app-deploy/app.pid"
+                        sleep 3
+                        kill -0 "$(cat "${WORKSPACE}/python-app-deploy/app.pid")"
+                    '''
+                }
             }
         }
 
         stage('Test Application') {
             steps {
-                echo 'Testing deployed application...'
-                sh '''
-                    "${WORKSPACE}/venv/bin/python" -c "
+                dir('Exercise-9-Jenkins-Multi-Stage-Pipeline') {
+                    echo 'Testing deployed application...'
+                    sh '''
+                        ./venv/bin/python -c "
 from urllib.request import urlopen
 response = urlopen('http://127.0.0.1:5000/', timeout=5)
 body = response.read().decode()
@@ -56,7 +65,8 @@ assert response.status == 200
 assert 'Hello, Jenkins Multi-Stage Pipeline!' in body
 print('Deployed application test passed!')
 "
-                '''
+                    '''
+                }
             }
         }
     }
