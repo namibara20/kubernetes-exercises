@@ -1,0 +1,16 @@
+#include <tunables/global>
+
+profile flask-apparmor-profile flags=(attach_disconnected,mediate_deleted) {
+    #include <abstractions/base>
+
+    network,
+    capability,
+
+    file,
+
+    deny /etc/passwd r,
+    deny /bin/bash ix,
+    deny /usr/bin/bash ix,        
+
+    deny mount,
+}
